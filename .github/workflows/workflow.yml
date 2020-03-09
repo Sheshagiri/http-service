@@ -1,4 +1,4 @@
-name: Build-DKR-Image
+name: Build-Publish-Docker-Image
 
 on:
   push:
@@ -31,5 +31,5 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: docker.pkg.github.com
-        repository: sheshagiri/http-service/http-service
+        repository: sheshagiri/http-service/http-service-minimal
         tags: latest,master
