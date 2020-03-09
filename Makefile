@@ -1,5 +1,5 @@
-docker-build:
-	docker build -t http-service .
+docker-build-master:
+	docker build -t sheshagiri/http-service:master .
 
 build:
 	go build
