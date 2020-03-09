@@ -33,3 +33,4 @@ jobs:
         registry: quay.io
         repository: sheshagiri0/http-service
         tags: latest,0.0.1
+        allow_pull_request: true
