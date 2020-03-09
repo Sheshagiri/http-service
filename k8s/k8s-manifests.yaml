@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailservice
+spec:
+  selector:
+    matchLabels:
+      app: emailservice
+  template:
+    metadata:
+      labels:
+        app: emailservice
+    spec:
+      terminationGracePeriodSeconds: 15
+      containers:
+      - name: server
+        image: docker.pkg.github.com/sheshagiri/http-service/http-service-minimal:0.0.1
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVICE_PORT
+          value: "8080"
+        - name: SERVICE_NAME
+          value: "emailservice"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailservice
+spec:
+  type: ClusterIP
+  selector:
+    app: emailservice
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 8080
+---
