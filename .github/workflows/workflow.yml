@@ -28,8 +28,8 @@ jobs:
     - name: Publish Docker Image
       uses: jerray/publish-docker-action@master
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: docker.pkg.github.com
-        repository: sheshagiri/http-service/http-service-minimal
+        username: ${{ secrets.DOCKER_USERNAME_QUAY }}
+        password: ${{ secrets.DOCKER_PASSWORD_QUAY }}
+        registry: quay.io
+        repository: sheshagiri0/http-service
         tags: latest,0.0.1
