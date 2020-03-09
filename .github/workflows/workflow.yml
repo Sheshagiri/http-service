@@ -32,4 +32,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         registry: docker.pkg.github.com
         repository: sheshagiri/http-service/http-service-minimal
-        tags: latest,master
+        tags: latest,0.0.1
