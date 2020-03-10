@@ -1,45 +1,328 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: emailservice
-spec:
-  selector:
-    matchLabels:
-      app: emailservice
-  template:
-    metadata:
-      labels:
-        app: emailservice
-    spec:
-      terminationGracePeriodSeconds: 15
-      containers:
-      - name: server
-        image: quay.io/sheshagiri0/http-service:0.0.1
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SERVICE_PORT
-          value: "8080"
-        - name: SERVICE_NAME
-          value: "emailservice"
-        resources:
-          requests:
-            cpu: 100m
-            memory: 64Mi
-          limits:
-            cpu: 200m
-            memory: 128Mi
----
+##################################################################################################
+# front-end service
+##################################################################################################
 apiVersion: v1
 kind: Service
 metadata:
-  name: emailservice
+  name: front-end
+  labels:
+    app: front-end
+    service: front-end
 spec:
-  type: ClusterIP
-  selector:
-    app: emailservice
   ports:
-  - name: http
-    port: 5000
-    targetPort: 8080
+  - port: 9080
+    name: http
+  selector:
+    app: front-end
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-end-v1
+  labels:
+    app: front-end
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-end
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: front-end
+        version: v1
+    spec:
+      containers:
+      - name: front-end
+        image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "front-end-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# api service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: api
+    service: api
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-v1
+  labels:
+    app: api
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: api
+        version: v1
+    spec:
+      containers:
+      - name: api
+        image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "api-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# catalog service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog
+  labels:
+    app: catalog
+    service: catalog
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: catalog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-v1
+  labels:
+    app: catalog
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: catalog
+        version: v1
+    spec:
+      containers:
+      - name: catalog
+        image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "catalog-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# inventory services
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  labels:
+    app: inventory
+    service: inventory
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: inventory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-v1
+  labels:
+    app: inventory
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: inventory
+        version: v1
+    spec:
+      containers:
+      - name: inventory
+        image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "inventory-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# payment services
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+  labels:
+    app: payment
+    service: payment
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: payment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-v1
+  labels:
+    app: payment
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: payment
+        version: v1
+    spec:
+      containers:
+      - name: payment
+        image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "payment-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# istio gateway service
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: commerce-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: commerce-app
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - commerce-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /inventory # it can be exact as well :) 
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: inventory
+        port:
+          number: 9080
+  - match:
+    - uri:
+        exact: /catalog
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: catalog
+        port:
+          number: 9080
+  - match:
+    - uri:
+        exact: /front-end
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: front-end
+        port:
+          number: 9080
