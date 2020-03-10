@@ -1,0 +1,93 @@
+##################################################################################################
+# inventory service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  labels:
+    app: inventory
+spec:
+  ports:
+  - name: http
+    port: 8000
+  selector:
+    app: inventory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: inventory
+        version: v1
+    spec:
+      containers:
+      - image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        name: inventory
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SERVICE_PORT
+          value: "8000"
+        - name: SERVICE_NAME
+          value: "inventory"
+---
+##################################################################################################
+# istio gateway
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: inventory-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default ingress gateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: inventory-credential # ensure k8s secret with this name is created
+    hosts:
+    - inventory.acme.com
+---
+##################################################################################################
+# inventory virtual service
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory
+spec:
+  hosts:
+  - "inventory.acme.com"
+  gateways:
+  - inventory-gateway
+  http:
+  - match:
+    - uri:
+        exact: /inventory
+    rewrite:
+      uri: /
+    #- uri:
+    #    exact: /inventory/items
+    #rewrite:
+    #  uri: /items
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: inventory
+---
