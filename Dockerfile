@@ -22,7 +22,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o http-service .
 
 ######## Start a new stage from scratch #######
-FROM scratch
+FROM ubuntu:18.04 
 
 WORKDIR /root/
 

@@ -1,0 +1,24 @@
+##################################################################################################
+# enable mtls on inventory service
+##################################################################################################
+apiVersion: authentication.istio.io/v1alpha1
+kind: Policy
+metadata:
+  name: inventory-receive-tls
+spec:
+  targets:
+  - name: inventory
+  peers:
+  - mtls: {} # this will set to STRICT which requires a valid certificate
+##################################################################################################
+# tell all the services to talk mtls when they talk to inventory service
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: inventory-mtls
+spec:
+  host: inventory.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

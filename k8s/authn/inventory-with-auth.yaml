@@ -1,0 +1,90 @@
+##################################################################################################
+# inventory-auth service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-auth
+  labels:
+    app: inventory-auth
+spec:
+  ports:
+  - name: http
+    port: 8000
+  selector:
+    app: inventory-auth
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-auth
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: inventory-auth
+        version: v1
+    spec:
+      containers:
+      - image: quay.io/sheshagiri0/http-service:0.0.1
+        imagePullPolicy: IfNotPresent
+        name: inventory-auth
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SERVICE_PORT
+          value: "8000"
+        - name: SERVICE_NAME
+          value: "inventory-auth"
+---
+##################################################################################################
+# istio gateway
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: inventory-auth-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default ingress gateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+##################################################################################################
+# inventory-auth virtual service
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-auth
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - inventory-auth-gateway
+  http:
+  - match:
+    - uri:
+        exact: /inventory-auth
+    rewrite:
+      uri: /
+    #- uri:
+    #    exact: /inventory-auth/items
+    #rewrite:
+    #  uri: /items
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: inventory-auth
+---

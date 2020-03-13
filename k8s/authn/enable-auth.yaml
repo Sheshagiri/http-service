@@ -1,0 +1,13 @@
+apiVersion: authentication.istio.io/v1alpha1
+kind: Policy
+metadata:
+  name: inventory-authn-policy
+spec:
+  targets:
+    - name: inventory-auth
+  origins:
+    - jwt:
+        issuer: "acme.com"
+        audiences: ["inventory.acme.com"]
+        jwks: "{"keys":[{"kty": "RSA","n": "oyXR2_R_-vomzzbjnKY0_ihTlZBLWwr5PBd9RKpOLE8_NfxGQPkp6DlAlpE_1QCsAL1n2IovrNJ0EYId8mdcTjmt7cfODvHtrGXj_-K3VqXAXuW_dYdojfrbb1k96VqRBJA9HgwtX7to0Z7o1Nu1TSAZ17oio0gOMezRi7r994lp1XvhCqwp6g_G0jGaF1tW76fMhPJanLaG9YkPoNFZiWn8d0kkWNfEpGKaLht_6hKhxRtGfjjcpNo9ELPG9N_lXL_BSDlX2b41JT0thb1DBtWSI7awBnxXtzhxdfMYeMsKx0lAwEw6DrJjH1rhpfkpiJlllB-PMQKZ_-QhuUei2w","e": "AQAB"}]}"
+  principalBinding: USE_ORIGIN

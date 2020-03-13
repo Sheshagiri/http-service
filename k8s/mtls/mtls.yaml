@@ -1,0 +1,156 @@
+##################################################################################################
+# catalog service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog
+  labels:
+    app: catalog
+    service: catalog
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: catalog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-v1
+  labels:
+    app: catalog
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: catalog
+        version: v1
+    spec:
+      containers:
+      - name: catalog
+        image: quay.io/sheshagiri0/http-service:0.0.2 # 0.0.2 is a fat container based on ubuntu
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "catalog-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# inventory services
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  labels:
+    app: inventory
+    service: inventory
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: inventory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-v1
+  labels:
+    app: inventory
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: inventory
+        version: v1
+    spec:
+      containers:
+      - name: inventory
+        image: quay.io/sheshagiri0/http-service:0.0.2 # 0.0.2 is a fat container based on ubuntu
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: SERVICE_PORT
+          value: "9080"
+        - name: SERVICE_NAME
+          value: "inventory-service"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+##################################################################################################
+# istio gateway service
+##################################################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: commerce-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: commerce-app
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - commerce-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /inventory # it can be exact as well :) 
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: inventory
+        port:
+          number: 9080
+  - match:
+    - uri:
+        exact: /catalog
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: catalog
+        port:
+          number: 9080
